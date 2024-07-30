@@ -23,7 +23,7 @@ app.listen(PORT,()=>{
 })
 
 app.use(cors({
-    origin: ['https://expense-tracker-tau-one-93.vercel.app' ,"http://localhost:5173"]
+    origin: ['https://expense-tracker-tau-one-93.vercel.app/' ,"http://localhost:5173"]
   }));
 app.use(express.json());
 
