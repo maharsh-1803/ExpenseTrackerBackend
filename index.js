@@ -22,7 +22,9 @@ app.listen(PORT,()=>{
     console.log(`server is running on ${PORT}`)
 })
 
-app.use(cors());
+app.use(cors({
+    origin: 'https://expense-tracker-tau-one-93.vercel.app/' 
+  }));
 app.use(express.json());
 
 app.use('/api/User',userRouter)
