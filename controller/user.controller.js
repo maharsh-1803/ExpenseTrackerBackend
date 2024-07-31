@@ -45,7 +45,26 @@ const loginUser = async(req,res)=>{
     }
 }
 
+const getUserDetailById = async(req,res)=>{
+    try {
+        const token = req.user;
+        const id = token._id;
+        const user = await User.findById(id)
+        if(!user){
+            return res.status(404).send({message:"user not found"});
+        }
+        return res.status(200).json({
+            success:true,
+            message:"user data retrived successfully",
+            user:user
+        })
+    } catch (error) {
+        return res.status(500).send({error:error.message})
+    }
+}
+
 module.exports = {
     addUser,
-    loginUser
+    loginUser,
+    getUserDetailById
 }

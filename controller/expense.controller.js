@@ -1,13 +1,13 @@
 const Expense = require("../model/expense.model")
 const mongoose = require('mongoose')
 
-const addExpense = async(req,res)=>{
+const addExpense = async (req, res) => {
     try {
-        const {title,description,amount,category} = req.body
+        const { title, description, amount, category } = req.body
         const tokenData = req.user;
         const id = tokenData._id;
         const newExpense = new Expense({
-            userId:id,
+            userId: id,
             title,
             description,
             amount,
@@ -16,60 +16,95 @@ const addExpense = async(req,res)=>{
 
         await newExpense.save();
         return res.status(200).json({
-            success:true,
-            message:"Expense added successfully",
-            expense:newExpense
+            success: true,
+            message: "Expense added successfully",
+            expense: newExpense
         })
     } catch (error) {
-        return res.status(500).send({error:error.message})
+        return res.status(500).send({ error: error.message })
     }
 }
 
-const getAllExpense =async(req,res)=>{
+const getAllExpense = async (req, res) => {
     try {
         const tokenData = req.user;
         const id = tokenData._id;
-        const expenses = await Expense.find({userId:id});
-        if(!expenses){
-            return res.status(404).send({message:"expenses not found"})
+        const expenses = await Expense.find({ userId: id });
+        if (!expenses) {
+            return res.status(404).send({ message: "expenses not found" })
         }
         const totalAmount = await Expense.aggregate([
-            {$match:{userId:new mongoose.Types.ObjectId(id)}},
+            { $match: { userId: new mongoose.Types.ObjectId(id) } },
             {
-                $group:{
-                    _id:null,
-                    total:{
-                        $sum:'$amount'
+                $group: {
+                    _id: null,
+                    total: {
+                        $sum: '$amount'
                     }
                 }
             }
         ])
         return res.status(200).json({
-            success:true,
-            message:"expenses retrived successfully",
+            success: true,
+            message: "expenses retrived successfully",
             totalAmount: totalAmount[0] ? totalAmount[0].total : 0,
-            expenses:expenses
+            expenses: expenses
         })
     } catch (error) {
-        return res.status(500).send({error:error.message})
+        return res.status(500).send({ error: error.message })
     }
 }
 
-const deleteExpese = async(req,res)=>{
+const deleteExpese = async (req, res) => {
     try {
-        const {id} = req.params;
+        const { id } = req.params;
         const expense = await Expense.findByIdAndDelete(id);
-        if(!expense){
-            return res.status(404).send({message:"Expense not found"})
+        if (!expense) {
+            return res.status(404).send({ message: "Expense not found" })
         }
-        return res.status(200).json({message:"expense delete successfully",expense:expense})
+        return res.status(200).json({ message: "expense delete successfully", expense: expense })
     } catch (error) {
-        return res.status(500).send({error:error.message})
+        return res.status(500).send({ error: error.message })
     }
 }
 
-module.exports={
+const updateExpense = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updateData = {};
+
+        if (req.body.title) updateData.title = req.body.title;
+        if (req.body.category) updateData.category = req.body.category;
+        if (req.body.amount) updateData.amount = req.body.amount;
+        if (req.body.description) updateData.description = req.body.description;
+
+        const updatedExpense = await Expense.findByIdAndUpdate(id, updateData, { new: true });
+
+        if (!updatedExpense) {
+            return res.status(404).json({
+                success: false,
+                message: "Expense not found",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Expense updated successfully",
+            expense: updatedExpense,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message,
+        });
+    }
+};
+
+
+module.exports = {
     addExpense,
     getAllExpense,
-    deleteExpese
+    deleteExpese,
+    updateExpense
 }
